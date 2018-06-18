@@ -33,9 +33,11 @@ class Vue {
   $walk (data) {
     for (const prop in data) {
       const value = data[prop]
+
       if (typeof value !== 'object') {
         this.$walk(value)
       }
+      
       this.$defineReactive(data, prop, value)
     }
   }
@@ -62,20 +64,17 @@ class Vue {
 
   $compile (data) {
     const REG = /\{\{(.*)\}\}/
-    const vm = this
-    Array.from(this.$el.childNodes).forEach(function (node) {
+    Array.from(data.childNodes).forEach(node => {
       const type = node.nodeType
-      const ifMatched = REG.test(node.data)
-      if (ifMatched) {
-        const matched = RegExp.$1.trim()
-        if (type === 3) {
-          Dep.target = node
-          node.data = vm[matched]
-        }
 
-        if (type === 1) {
-          this.$compile(node)
-        }
+      if (type === 3 && REG.test(node.data)) {
+        const matched = RegExp.$1.trim()
+          Dep.target = node
+          node.data = this[matched]
+      }
+
+      if (type === 1 && REG.test(node.innerHTML)) {
+        this.$compile(node)
       }
     })
   }
